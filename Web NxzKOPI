@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NxzKOPI - Premium Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --kenangan-red: #a30a24; /* Tetap menggunakan warna merah ikonik */
+            --dark-bg: #1a1a1a;
+            --card-white: #ffffff;
+            --soft-gray: #f8f9fa;
+            --success-green: #27ae60;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            margin: 0;
+            background-color: #f0f2f5;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar Kategori */
+        .sidebar {
+            width: 100px;
+            background: var(--kenangan-red);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 0;
+            gap: 20px;
+        }
+
+        .category-btn {
+            color: white;
+            font-size: 0.7rem;
+            cursor: pointer;
+            text-align: center;
+            opacity: 0.6;
+            transition: 0.3s;
+            width: 100%;
+            padding: 10px 0;
+        }
+
+        .category-btn:hover { opacity: 1; }
+        .category-btn.active {
+            opacity: 1;
+            font-weight: bold;
+            background: rgba(255,255,255,0.1);
+            border-right: 4px solid white;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 25px;
+            overflow-y: auto;
+        }
+
+        .header-pos {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .search-bar {
+            padding: 10px 20px;
+            border-radius: 25px;
+            border: 1px solid #ddd;
+            width: 300px;
+            outline: none;
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 20px;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            transition: 0.3s;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .product-card:hover {
+            border-color: var(--kenangan-red);
+            transform: translateY(-5px);
+        }
+
+        .product-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        /* Cart Section */
+        .cart-panel {
+            width: 380px;
+            background: white;
+            border-left: 1px solid #eee;
+            display: flex;
+            flex-direction: column;
+            padding: 25px;
+        }
+
+        .cart-list {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .cart-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .qty-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-qty {
+            background: #eee;
+            border: none;
+            width: 25px;
+            height: 25px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        /* Payment Section */
+        .payment-section {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px dashed #eee;
+        }
+
+        .pay-select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            margin: 10px 0;
+            outline: none;
+            font-weight: 600;
+        }
+
+        #cash-input-group { display: none; }
+        .input-cash {
+            width: 100%;
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid var(--kenangan-red);
+            outline: none;
+        }
+
+        .summary {
+            background: var(--soft-gray);
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 15px;
+        }
+
+        .btn-pay {
+            background: var(--kenangan-red);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-top: 15px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(163, 10, 36, 0.3);
+        }
+
+        /* --- MODAL STYLES --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .modal-card {
+            background: white;
+            width: 400px;
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .qr-placeholder {
+            width: 200px;
+            height: 200px;
+            background: #eee;
+            margin: 20px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 10px solid white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .success-icon {
+            font-size: 4rem;
+            color: var(--success-green);
+            margin-bottom: 15px;
+        }
+
+        .receipt-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <div style="font-weight: bold; color: white; margin-bottom: 30px; font-size: 1.5rem;">NK.</div>
+    <div class="category-btn active" onclick="filterCategory('ALL', this)">ALL</div>
+    <div class="category-btn" onclick="filterCategory('COFFEE', this)">COFFEE</div>
+    <div class="category-btn" onclick="filterCategory('NON-COFFEE', this)">NON-COFFEE</div>
+    <div class="category-btn" onclick="filterCategory('BREAD', this)">BREAD</div>
+</div>
+
+<div class="main-content">
+    <div class="header-pos">
+        <h2 style="margin: 0;">Menu NxzKOPI</h2>
+        <input type="text" class="search-bar" id="searchInput" placeholder="Cari kopi favoritmu..." onkeyup="handleSearch(this.value)">
+    </div>
+    <div class="product-grid" id="productGrid"></div>
+</div>
+
+<div class="cart-panel">
+    <h3>Pesanan Pelanggan</h3>
+    <div class="cart-list" id="cartList"></div>
+
+    <div class="payment-section">
+        <label style="font-size: 0.85rem; font-weight: 600;">Metode Pembayaran:</label>
+        <select class="pay-select" id="payMethod" onchange="toggleCashInput()">
+            <option value="Tunai">Tunai</option>
+            <option value="QRIS">QRIS / LinkAja</option>
+            <option value="GoPay">GoPay / OVO</option>
+            <option value="Debit">Kartu Debit</option>
+        </select>
+
+        <div id="cash-input-group">
+            <label style="font-size: 0.8rem; color: #666;">Uang Tunai Diterima:</label>
+            <input type="number" class="input-cash" id="cashReceived" placeholder="Rp 0">
+        </div>
+    </div>
+
+    <div class="summary">
+        <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 1.2rem;">
+            <span>Total</span>
+            <span id="totalPrice" style="color: var(--kenangan-red);">Rp 0</span>
+        </div>
+        <button class="btn-pay" onclick="handleCheckout()">Bayar Sekarang</button>
+    </div>
+</div>
+
+<div class="modal-overlay" id="paymentModal">
+    <div class="modal-card">
+        <div id="modalContent"></div>
+        <button class="btn-pay" onclick="closeModal()">Selesai & Pesanan Baru</button>
+    </div>
+</div>
+
+<script>
+    // Data Menu NxzKOPI
+    const menuData = [
+        { id: 1, name: "Kopi Nxz Signature", price: 18000, cat: "COFFEE", icon: "🥤" },
+        { id: 2, name: "Ice Caramel Latte", price: 24000, cat: "COFFEE", icon: "🍮" },
+        { id: 3, name: "Nxz Americano", price: 15000, cat: "COFFEE", icon: "☕" },
+        { id: 4, name: "Vanilla Macchiato", price: 28000, cat: "COFFEE", icon: "🍦" },
+        { id: 5, name: "Hazelnut Coffee", price: 24000, cat: "COFFEE", icon: "🥛" },
+        { id: 6, name: "Nxz Avocuddle", price: 28000, cat: "NON-COFFEE", icon: "🥑" },
+        { id: 7, name: "Nxz Chocolate", price: 25000, cat: "NON-COFFEE", icon: "🍫" },
+        { id: 8, name: "Nxz Boba Milk", price: 24000, cat: "NON-COFFEE", icon: "🧋" },
+        { id: 9, name: "Thai Tea Creamy", price: 18000, cat: "NON-COFFEE", icon: "🍃" },
+        { id: 10, name: "Milo Nxz-Saurus", price: 20000, cat: "NON-COFFEE", icon: "🦖" },
+        { id: 11, name: "Matcha Premium", price: 26000, cat: "NON-COFFEE", icon: "🍵" },
+        { id: 12, name: "Roti Nxz Cokelat", price: 12000, cat: "BREAD", icon: "🍞" },
+        { id: 13, name: "Roti Nxz Keju", price: 12000, cat: "BREAD", icon: "🧀" },
+        { id: 14, name: "Beef Smoke Nxz", price: 15000, cat: "BREAD", icon: "🥓" },
+        { id: 15, name: "Martabak Toast", price: 14000, cat: "BREAD", icon: "🥞" },
+    ];
+
+    let cart = [];
+    let currentCategory = 'ALL';
+    let currentTotal = 0;
+
+    function renderMenu(items = menuData) {
+        const grid = document.getElementById('productGrid');
+        grid.innerHTML = items.map(item => `
+            <div class="product-card" onclick="addToCart(${item.id})">
+                <span class="product-icon">${item.icon}</span>
+                <div style="font-weight: 600; font-size: 0.9rem;">${item.name}</div>
+                <div style="color: var(--kenangan-red); font-size: 0.85rem; margin-top: 5px;">
+                    Rp ${item.price.toLocaleString('id-ID')}
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function toggleCashInput() {
+        const method = document.getElementById('payMethod').value;
+        const group = document.getElementById('cash-input-group');
+        group.style.display = (method === 'Tunai') ? 'block' : 'none';
+    }
+
+    function filterCategory(category, element) {
+        currentCategory = category;
+        document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+        element.classList.add('active');
+        const filtered = category === 'ALL' ? menuData : menuData.filter(m => m.cat === category);
+        renderMenu(filtered);
+    }
+
+    function handleSearch(query) {
+        const filtered = menuData.filter(m => 
+            m.name.toLowerCase().includes(query.toLowerCase()) && 
+            (currentCategory === 'ALL' || m.cat === currentCategory)
+        );
+        renderMenu(filtered);
+    }
+
+    function addToCart(id) {
+        const product = menuData.find(m => m.id === id);
+        const inCart = cart.find(c => c.id === id);
+        if (inCart) inCart.qty++; else cart.push({ ...product, qty: 1 });
+        updateUI();
+    }
+
+    function changeQty(id, delta) {
+        const item = cart.find(c => c.id === id);
+        if (item) {
+            item.qty += delta;
+            if (item.qty <= 0) cart = cart.filter(c => c.id !== id);
+        }
+        updateUI();
+    }
+
+    function updateUI() {
+        const cartList = document.getElementById('cartList');
+        currentTotal = 0;
+        cartList.innerHTML = cart.map(item => {
+            currentTotal += item.price * item.qty;
+            return `
+                <div class="cart-item">
+                    <div>
+                        <div style="font-size: 0.9rem; font-weight: 600;">${item.name}</div>
+                        <div style="font-size: 0.8rem; color: #777;">Rp ${item.price.toLocaleString('id-ID')}</div>
+                    </div>
+                    <div class="qty-control">
+                        <button class="btn-qty" onclick="changeQty(${item.id}, -1)">-</button>
+                        <span>${item.qty}</span>
+                        <button class="btn-qty" onclick="changeQty(${item.id}, 1)">+</button>
+                    </div>
+                </div>`;
+        }).join('');
+        document.getElementById('totalPrice').innerText = `Rp ${currentTotal.toLocaleString('id-ID')}`;
+    }
+
+    function handleCheckout() {
+        if (cart.length === 0) return alert("Keranjang masih kosong!");
+        
+        const method = document.getElementById('payMethod').value;
+        const modal = document.getElementById('paymentModal');
+        const content = document.getElementById('modalContent');
+        
+        let innerHTML = '';
+
+        if (method === 'Tunai') {
+            const cash = parseInt(document.getElementById('cashReceived').value) || 0;
+            if (cash < currentTotal) return alert("Uang tunai kurang!");
+            const change = cash - currentTotal;
+            
+            innerHTML = `
+                <div class="success-icon">✅</div>
+                <h3>Pembayaran NxzKOPI Berhasil</h3>
+                <div style="background: #f9f9f9; padding: 15px; border-radius: 10px; margin: 15px 0;">
+                    <div class="receipt-item"><span>Total Tagihan:</span> <b>Rp ${currentTotal.toLocaleString()}</b></div>
+                    <div class="receipt-item"><span>Uang Diterima:</span> <b>Rp ${cash.toLocaleString()}</b></div>
+                    <div class="receipt-item" style="color: var(--kenangan-red); font-size: 1.1rem; border-top: 1px solid #ddd; margin-top: 5px; padding-top: 5px;">
+                        <span>Kembalian:</span> <b>Rp ${change.toLocaleString()}</b>
+                    </div>
+                </div>
+            `;
+        } else if (method === 'QRIS') {
+            innerHTML = `
+                <h3>Scan QRIS NxzKOPI</h3>
+                <div class="qr-placeholder">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=NxzKOPI-${currentTotal}" alt="QR Code">
+                </div>
+                <p style="font-weight: bold; font-size: 1.2rem; color: var(--kenangan-red);">Rp ${currentTotal.toLocaleString()}</p>
+                <p style="font-size: 0.8rem; color: #777;">Silahkan scan untuk konfirmasi pesanan</p>
+            `;
+        } else {
+            innerHTML = `
+                <div class="success-icon">💳</div>
+                <h3>Transaksi ${method}</h3>
+                <p>Silahkan selesaikan di terminal EDC.</p>
+                <h2 style="color: var(--kenangan-red);">Rp ${currentTotal.toLocaleString()}</h2>
+                <div style="color: var(--success-green); font-weight: bold;">Status: BERHASIL</div>
+            `;
+        }
+
+        content.innerHTML = innerHTML;
+        modal.style.display = 'flex';
+    }
+
+    function closeModal() {
+        document.getElementById('paymentModal').style.display = 'none';
+        cart = [];
+        document.getElementById('cashReceived').value = "";
+        updateUI();
+    }
+
+    renderMenu();
+</script>
+
+</body>
+</html>
