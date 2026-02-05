@@ -3,453 +3,410 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NxzKOPI - Premium Edition</title>
+    <title>NxzKOPI Pro - Management System</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
         :root {
-            --kenangan-red: #a30a24; /* Tetap menggunakan warna merah ikonik */
-            --dark-bg: #1a1a1a;
-            --card-white: #ffffff;
-            --soft-gray: #f8f9fa;
-            --success-green: #27ae60;
+            --primary: #a30a24;
+            --secondary: #2c3e50;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --bg: #f8f9fa;
         }
 
-        * {
-            box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
+        * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { margin: 0; background-color: var(--bg); display: flex; height: 100vh; overflow: hidden; }
+
+        /* --- LOGIN PAGE --- */
+        #loginPage {
+            position: fixed; inset: 0; background: var(--secondary);
+            display: flex; justify-content: center; align-items: center; z-index: 9999;
+        }
+        .login-card {
+            background: white; padding: 40px; border-radius: 20px; width: 350px; text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .login-card input {
+            width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 10px;
         }
 
-        body {
-            margin: 0;
-            background-color: #f0f2f5;
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-        }
+        /* --- MAIN LAYOUT --- */
+        .sidebar { width: 100px; background: var(--secondary); display: flex; flex-direction: column; align-items: center; padding: 20px 0; }
+        .nav-item { color: #fff; font-size: 0.7rem; cursor: pointer; padding: 15px 0; width: 100%; text-align: center; opacity: 0.6; transition: 0.3s; }
+        .nav-item:hover { opacity: 1; background: rgba(255,255,255,0.1); }
+        .nav-item.active { opacity: 1; border-right: 4px solid var(--primary); background: rgba(255,255,255,0.1); }
 
-        /* Sidebar Kategori */
-        .sidebar {
-            width: 100px;
-            background: var(--kenangan-red);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px 0;
-            gap: 20px;
-        }
+        .main-container { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .content-area { flex: 1; display: flex; overflow: hidden; }
+        
+        /* POS & GRID */
+        .pos-section { flex: 1; padding: 20px; overflow-y: auto; }
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; }
+        .product-card { background: white; border-radius: 15px; padding: 15px; text-align: center; cursor: pointer; border: 1px solid #eee; position: relative; transition: 0.2s; }
+        .product-card:hover { border-color: var(--primary); transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .product-card.out-of-stock { opacity: 0.5; filter: grayscale(1); pointer-events: none; }
+        .stock-tag { position: absolute; top: 5px; right: 8px; font-size: 0.6rem; color: #888; }
 
-        .category-btn {
-            color: white;
-            font-size: 0.7rem;
-            cursor: pointer;
-            text-align: center;
-            opacity: 0.6;
-            transition: 0.3s;
-            width: 100%;
-            padding: 10px 0;
-        }
+        /* CART PANEL */
+        .cart-panel { width: 350px; background: white; border-left: 1px solid #ddd; padding: 20px; display: flex; flex-direction: column; }
+        .cart-list { flex: 1; overflow-y: auto; margin: 15px 0; border-top: 1px solid #eee; }
+        .cart-item { display: flex; justify-content: space-between; font-size: 0.8rem; margin-top: 10px; padding-bottom: 5px; border-bottom: 1px solid #fafafa; }
 
-        .category-btn:hover { opacity: 1; }
-        .category-btn.active {
-            opacity: 1;
-            font-weight: bold;
-            background: rgba(255,255,255,0.1);
-            border-right: 4px solid white;
-        }
+        /* ADMIN SECTION */
+        #adminSection { display: none; padding: 30px; overflow-y: auto; width: 100%; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 0.8rem; font-weight: bold; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc; }
 
-        /* Main Content */
-        .main-content {
-            flex: 1;
-            padding: 25px;
-            overflow-y: auto;
-        }
-
-        .header-pos {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-        }
-
-        .search-bar {
-            padding: 10px 20px;
-            border-radius: 25px;
-            border: 1px solid #ddd;
-            width: 300px;
-            outline: none;
-        }
-
-        .product-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            gap: 20px;
-        }
-
-        .product-card {
-            background: white;
-            border-radius: 20px;
-            padding: 20px;
-            text-align: center;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
-            transition: 0.3s;
-            cursor: pointer;
-            border: 2px solid transparent;
-        }
-
-        .product-card:hover {
-            border-color: var(--kenangan-red);
-            transform: translateY(-5px);
-        }
-
-        .product-icon {
-            font-size: 3rem;
-            margin-bottom: 15px;
-            display: block;
-        }
-
-        /* Cart Section */
-        .cart-panel {
-            width: 380px;
-            background: white;
-            border-left: 1px solid #eee;
-            display: flex;
-            flex-direction: column;
-            padding: 25px;
-        }
-
-        .cart-list {
-            flex: 1;
-            overflow-y: auto;
-        }
-
-        .cart-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #f0f0f0;
-        }
-
-        .qty-control {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .btn-qty {
-            background: #eee;
-            border: none;
-            width: 25px;
-            height: 25px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        /* Payment Section */
-        .payment-section {
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 2px dashed #eee;
-        }
-
-        .pay-select {
-            width: 100%;
-            padding: 12px;
-            border-radius: 10px;
-            border: 1px solid #ddd;
-            margin: 10px 0;
-            outline: none;
-            font-weight: 600;
-        }
-
-        #cash-input-group { display: none; }
-        .input-cash {
-            width: 100%;
-            padding: 10px;
-            border-radius: 10px;
-            border: 1px solid var(--kenangan-red);
-            outline: none;
-        }
-
-        .summary {
-            background: var(--soft-gray);
-            padding: 20px;
-            border-radius: 15px;
-            margin-top: 15px;
-        }
-
-        .btn-pay {
-            background: var(--kenangan-red);
-            color: white;
-            border: none;
-            width: 100%;
-            padding: 15px;
-            border-radius: 12px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            margin-top: 15px;
-            cursor: pointer;
-            box-shadow: 0 5px 15px rgba(163, 10, 36, 0.3);
-        }
-
-        /* --- MODAL STYLES --- */
-        .modal-overlay {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-        }
-
-        .modal-card {
-            background: white;
-            width: 400px;
-            border-radius: 20px;
-            padding: 30px;
-            text-align: center;
-            animation: slideUp 0.3s ease-out;
-        }
-
-        @keyframes slideUp {
-            from { transform: translateY(50px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        .qr-placeholder {
-            width: 200px;
-            height: 200px;
-            background: #eee;
-            margin: 20px auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 10px solid white;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-
-        .success-icon {
-            font-size: 4rem;
-            color: var(--success-green);
-            margin-bottom: 15px;
-        }
-
-        .receipt-item {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.85rem;
-            margin-bottom: 5px;
-        }
+        /* MODAL */
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 2000; }
+        .receipt { background: white; width: 300px; padding: 20px; font-family: monospace; font-size: 0.8rem; }
+        
+        .btn { border: none; padding: 12px; border-radius: 10px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.2s; margin-bottom: 5px; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-warning { background: var(--warning); color: white; }
+        
+        @media print { .no-print { display: none; } body { background: white; } }
     </style>
 </head>
 <body>
 
-<div class="sidebar">
-    <div style="font-weight: bold; color: white; margin-bottom: 30px; font-size: 1.5rem;">NK.</div>
-    <div class="category-btn active" onclick="filterCategory('ALL', this)">ALL</div>
-    <div class="category-btn" onclick="filterCategory('COFFEE', this)">COFFEE</div>
-    <div class="category-btn" onclick="filterCategory('NON-COFFEE', this)">NON-COFFEE</div>
-    <div class="category-btn" onclick="filterCategory('BREAD', this)">BREAD</div>
-</div>
-
-<div class="main-content">
-    <div class="header-pos">
-        <h2 style="margin: 0;">Menu NxzKOPI</h2>
-        <input type="text" class="search-bar" id="searchInput" placeholder="Cari kopi favoritmu..." onkeyup="handleSearch(this.value)">
+<div id="loginPage">
+    <div class="login-card">
+        <h2 style="color:var(--primary)">NxzKOPI</h2>
+        <p style="font-size:0.8rem; color:#666;">Silahkan Masuk ke Sistem</p>
+        <input type="text" id="username" placeholder="Username (admin)">
+        <input type="password" id="password" placeholder="Password (1234)">
+        <button class="btn btn-primary" onclick="handleLogin()">LOGIN</button>
+        
+        <div style="margin: 15px 0; font-size: 0.7rem; color: #999;">ATAU</div>
+        
+        <div id="g_id_onload"
+             data-client_id="YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com"
+             data-callback="handleGoogleLogin">
+        </div>
+        <div class="g_id_signin" data-type="standard"></div>
     </div>
-    <div class="product-grid" id="productGrid"></div>
 </div>
 
-<div class="cart-panel">
-    <h3>Pesanan Pelanggan</h3>
-    <div class="cart-list" id="cartList"></div>
+<div class="sidebar no-print">
+    <div style="font-weight:bold; color:white; margin-bottom:30px; font-size:1.2rem;">NK.</div>
+    <div class="nav-item active" onclick="switchTab('pos', this)">🛒 POS</div>
+    <div class="nav-item" onclick="switchTab('admin', this)">⚙️ ADMIN</div>
+    <div class="nav-item" onclick="location.reload()" style="margin-top:auto">🚪 KELUAR</div>
+</div>
 
-    <div class="payment-section">
-        <label style="font-size: 0.85rem; font-weight: 600;">Metode Pembayaran:</label>
-        <select class="pay-select" id="payMethod" onchange="toggleCashInput()">
-            <option value="Tunai">Tunai</option>
-            <option value="QRIS">QRIS / LinkAja</option>
-            <option value="GoPay">GoPay / OVO</option>
-            <option value="Debit">Kartu Debit</option>
-        </select>
+<div class="main-container">
+    <div id="posSection" class="content-area">
+        <div class="pos-section">
+            <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
+                <h3 style="margin:0;">Terminal Kasir <span id="userDisplayName" style="font-size: 0.8rem; font-weight: normal; color: #888;"></span></h3>
+                <input type="text" placeholder="Cari menu..." onkeyup="renderProducts(this.value)" style="padding:8px 15px; border-radius:20px; border:1px solid #ddd;">
+            </div>
+            <div class="product-grid" id="productGrid"></div>
+        </div>
 
-        <div id="cash-input-group">
-            <label style="font-size: 0.8rem; color: #666;">Uang Tunai Diterima:</label>
-            <input type="number" class="input-cash" id="cashReceived" placeholder="Rp 0">
+        <div class="cart-panel no-print">
+            <h4 style="margin:0;">Rincian Pesanan</h4>
+            <div class="cart-list" id="cartList"></div>
+            
+            <div style="background: #fff9e6; padding: 10px; border-radius: 8px; margin-bottom: 10px;">
+                <small>Punya Kode Promo?</small>
+                <div style="display:flex; gap:5px; margin-top:5px;">
+                    <input type="text" id="promoCode" placeholder="Kode..." style="flex:1; border:1px solid #ddd; border-radius:5px; padding:5px;">
+                    <button class="btn-success" onclick="applyPromo()" style="padding:5px 10px; border:none; border-radius:5px; cursor:pointer;">Cek</button>
+                </div>
+            </div>
+
+            <div style="font-size:0.85rem; border-top: 2px dashed #eee; padding-top:10px;">
+                <div style="display:flex; justify-content:space-between;"><span>Subtotal</span><span id="subTotal">Rp 0</span></div>
+                <div style="display:flex; justify-content:space-between; color: var(--success); display:none;" id="diskonRow">
+                    <span>Diskon</span><span id="diskonAmount">-Rp 0</span>
+                </div>
+                <div style="display:flex; justify-content:space-between;"><span>Pajak (10%)</span><span id="tax">Rp 0</span></div>
+                <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:1.1rem; color:var(--primary); margin-top:5px;">
+                    <span>TOTAL</span><span id="grandTotal">Rp 0</span>
+                </div>
+            </div>
+
+            <select id="method" style="width:100%; padding:10px; margin:10px 0; border-radius:8px;">
+                <option value="Tunai">💵 Tunai</option>
+                <option value="QRIS">📱 QRIS</option>
+                <option value="Debit">💳 Kartu Debit</option>
+            </select>
+            <input type="number" id="cashInput" placeholder="Jumlah Bayar..." style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd; margin-bottom:10px;">
+            
+            <button class="btn btn-warning" onclick="holdOrder()">📥 SIMPAN ANTREAN</button>
+            <button class="btn btn-primary" onclick="processPayment()">PROSES BAYAR</button>
+            
+            <div id="pendingCount" style="text-align:center; font-size:0.7rem; color:var(--warning); margin-top:5px; font-weight:bold;"></div>
         </div>
     </div>
 
-    <div class="summary">
-        <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 1.2rem;">
-            <span>Total</span>
-            <span id="totalPrice" style="color: var(--kenangan-red);">Rp 0</span>
+    <div id="adminSection">
+        <div style="display:flex; gap:30px;">
+            <div style="flex:1; background:white; padding:20px; border-radius:15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+                <h4>Tambah Menu Baru</h4>
+                <div class="form-group">
+                    <label>Nama Menu</label>
+                    <input type="text" id="newName">
+                </div>
+                <div class="form-group">
+                    <label>Harga (Rp)</label>
+                    <input type="number" id="newPrice">
+                </div>
+                <div class="form-group">
+                    <label>Stok Awal</label>
+                    <input type="number" id="newStock">
+                </div>
+                <div class="form-group">
+                    <label>Kategori</label>
+                    <select id="newCat">
+                        <option value="COFFEE">COFFEE</option>
+                        <option value="NON-COFFEE">NON-COFFEE</option>
+                        <option value="BREAD">BREAD</option>
+                    </select>
+                </div>
+                <button class="btn btn-success" onclick="addNewProduct()">SIMPAN MENU</button>
+            </div>
+            
+            <div style="flex:2; background:white; padding:20px; border-radius:15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+                <h4>Statistik Penjualan</h4>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+                    <div style="background:var(--bg); padding:15px; border-radius:10px;">
+                        <small>Total Omzet</small>
+                        <h2 id="statIncome" style="margin:0; color:var(--success)">Rp 0</h2>
+                    </div>
+                    <div style="background:var(--bg); padding:15px; border-radius:10px;">
+                        <small>Total Transaksi</small>
+                        <h2 id="statOrders" style="margin:0;">0</h2>
+                    </div>
+                </div>
+            </div>
         </div>
-        <button class="btn-pay" onclick="handleCheckout()">Bayar Sekarang</button>
     </div>
 </div>
 
-<div class="modal-overlay" id="paymentModal">
-    <div class="modal-card">
-        <div id="modalContent"></div>
-        <button class="btn-pay" onclick="closeModal()">Selesai & Pesanan Baru</button>
-    </div>
+<div class="modal" id="modal">
+    <div class="receipt" id="receiptArea"></div>
 </div>
 
 <script>
-    // Data Menu NxzKOPI
-    const menuData = [
-        { id: 1, name: "Kopi Nxz Signature", price: 18000, cat: "COFFEE", icon: "🥤" },
-        { id: 2, name: "Ice Caramel Latte", price: 24000, cat: "COFFEE", icon: "🍮" },
-        { id: 3, name: "Nxz Americano", price: 15000, cat: "COFFEE", icon: "☕" },
-        { id: 4, name: "Vanilla Macchiato", price: 28000, cat: "COFFEE", icon: "🍦" },
-        { id: 5, name: "Hazelnut Coffee", price: 24000, cat: "COFFEE", icon: "🥛" },
-        { id: 6, name: "Nxz Avocuddle", price: 28000, cat: "NON-COFFEE", icon: "🥑" },
-        { id: 7, name: "Nxz Chocolate", price: 25000, cat: "NON-COFFEE", icon: "🍫" },
-        { id: 8, name: "Nxz Boba Milk", price: 24000, cat: "NON-COFFEE", icon: "🧋" },
-        { id: 9, name: "Thai Tea Creamy", price: 18000, cat: "NON-COFFEE", icon: "🍃" },
-        { id: 10, name: "Milo Nxz-Saurus", price: 20000, cat: "NON-COFFEE", icon: "🦖" },
-        { id: 11, name: "Matcha Premium", price: 26000, cat: "NON-COFFEE", icon: "🍵" },
-        { id: 12, name: "Roti Nxz Cokelat", price: 12000, cat: "BREAD", icon: "🍞" },
-        { id: 13, name: "Roti Nxz Keju", price: 12000, cat: "BREAD", icon: "🧀" },
-        { id: 14, name: "Beef Smoke Nxz", price: 15000, cat: "BREAD", icon: "🥓" },
-        { id: 15, name: "Martabak Toast", price: 14000, cat: "BREAD", icon: "🥞" },
+    // Database Produk
+    let products = [
+       // --- COFFEE SERIES ---
+        { id: 1, name: "Aren Signature", price: 18000, stock: 42, icon: "🥤" },
+        { id: 2, name: "Caramel Latte", price: 24000, stock: 15, icon: "🍮" },
+        { id: 3, name: "Americano Ice", price: 15000, stock: 88, icon: "☕" },
+        { id: 4, name: "Vanilla Latte", price: 23000, stock: 12, icon: "🍦" },
+        { id: 5, name: "Hazelnut Coffee", price: 24000, stock: 9, icon: "🥜" },
+        { id: 6, name: "Spanish Latte", price: 26000, stock: 21, icon: "🇪🇸" },
+        { id: 7, name: "Mocha Melt", price: 25000, stock: 7, icon: "🍫" },
+        { id: 8, name: "Affogato", price: 22000, stock: 14, icon: "🍨" },
+        { id: 9, name: "Cold Brew Ori", price: 20000, stock: 5, icon: "🧊" },
+        { id: 10, name: "Espresso Double", price: 12000, stock: 99, icon: "☕" },
+
+        // --- NON-COFFEE SERIES ---
+        { id: 11, name: "Matcha Latte", price: 26000, stock: 18, icon: "🍵" },
+        { id: 12, name: "Nxz Chocolate", price: 22000, stock: 33, icon: "🍫" },
+        { id: 13, name: "Red Velvet", price: 25000, stock: 11, icon: "🍰" },
+        { id: 14, name: "Taro Velvet", price: 24000, stock: 16, icon: "🍠" },
+        { id: 15, name: "Klepon Latte", price: 27000, stock: 8, icon: "🟢" },
+        { id: 16, name: "Cookies & Cream", price: 28000, stock: 20, icon: "🍪" },
+        { id: 17, name: "Cotton Candy", price: 25000, stock: 13, icon: "🍭" },
+        { id: 18, name: "Strawberry Milk", price: 22000, stock: 19, icon: "🍓" },
+
+        // --- PREMIUM TEA ---
+        { id: 19, name: "Earl Grey Tea", price: 18000, stock: 45, icon: "🍃" },
+        { id: 20, name: "Peach Tea Ice", price: 20000, stock: 24, icon: "🍑" },
+        { id: 21, name: "Lychee Tea", price: 20000, stock: 31, icon: "🍒" },
+        { id: 22, name: "Lemon Tea", price: 15000, stock: 50, icon: "🍋" },
+        { id: 23, name: "Chamomile Hot", price: 18000, stock: 12, icon: "🌼" },
+        { id: 24, name: "Thai Tea Ori", price: 15000, stock: 40, icon: "🍂" },
+
+        // --- ARTISAN PASTRY ---
+        { id: 25, name: "Croissant Ori", price: 15000, stock: 6, icon: "🥐" },
+        { id: 26, name: "Pain Au Choc", price: 18000, stock: 4, icon: "🥖" },
+        { id: 27, name: "Cheese Danish", price: 20000, stock: 3, icon: "🧀" },
+        { id: 28, name: "Almond Croissant", price: 22000, stock: 2, icon: "🥨" },
+        { id: 29, name: "Cinnamon Roll", price: 18000, stock: 10, icon: "🌀" },
+        { id: 30, name: "Beef Puff", price: 21000, stock: 7, icon: "🥧" },
+
+        // --- HEAVY MEALS / SNACKS ---
+        { id: 31, name: "Nxz Platter", price: 35000, stock: 15, icon: "🍟" },
+        { id: 32, name: "Chicken Wings", price: 28000, stock: 12, icon: "🍗" },
+        { id: 33, name: "French Fries", price: 18000, stock: 40, icon: "🍟" },
+        { id: 34, name: "Sandwich Beef", price: 25000, stock: 5, icon: "🥪" },
+        { id: 35, name: "Waffle Ice Cream", price: 30000, stock: 9, icon: "🧇" },
+
+        // --- REFRESHER (SODA base) ---
+        { id: 36, name: "Blue Lagoon", price: 24000, stock: 22, icon: "🌊" },
+        { id: 37, name: "Virgin Mojito", price: 24000, stock: 18, icon: "🍃" },
+        { id: 38, name: "Berry Punch", price: 26000, stock: 14, icon: "🍹" },
+        { id: 39, name: "Sunrise Soda", price: 24000, stock: 20, icon: "🌅" },
+        { id: 40, name: "Nxz Boba Milk", price: 24000, stock: 0, icon: "🧋" } // Stok Habis
     ];
 
     let cart = [];
-    let currentCategory = 'ALL';
-    let currentTotal = 0;
+    let pendingOrders = [];
+    let history = { income: 0, orders: 0 };
+    let discount = 0;
 
-    function renderMenu(items = menuData) {
+    // --- FITUR LOGIN ---
+    function handleLogin() {
+        const u = document.getElementById('username').value;
+        const p = document.getElementById('password').value;
+        if(u === 'Akhdan20' && p === '200507') {
+            successLogin("Admin");
+        } else {
+            alert("Login Gagal!");
+        }
+    }
+
+    function handleGoogleLogin(response) {
+        const payload = JSON.parse(atob(response.credential.split('.')[1]));
+        successLogin(payload.name);
+    }
+
+    function successLogin(name) {
+        document.getElementById('loginPage').style.display = 'none';
+        document.getElementById('userDisplayName').innerText = `| Kasir: ${name}`;
+    }
+
+    // --- FITUR POS ---
+    function switchTab(tab, el) {
+        document.getElementById('posSection').style.display = tab === 'pos' ? 'flex' : 'none';
+        document.getElementById('adminSection').style.display = tab === 'admin' ? 'block' : 'none';
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        el.classList.add('active');
+    }
+
+    function renderProducts(query = "") {
         const grid = document.getElementById('productGrid');
-        grid.innerHTML = items.map(item => `
-            <div class="product-card" onclick="addToCart(${item.id})">
-                <span class="product-icon">${item.icon}</span>
-                <div style="font-weight: 600; font-size: 0.9rem;">${item.name}</div>
-                <div style="color: var(--kenangan-red); font-size: 0.85rem; margin-top: 5px;">
-                    Rp ${item.price.toLocaleString('id-ID')}
-                </div>
+        grid.innerHTML = products.filter(p => p.name.toLowerCase().includes(query.toLowerCase())).map(p => `
+            <div class="product-card ${p.stock <= 0 ? 'out-of-stock' : ''}" onclick="addToCart(${p.id})">
+                <span class="stock-tag">Stok: ${p.stock}</span>
+                <div style="font-size:2.5rem">${p.icon}</div>
+                <div style="font-weight:bold; font-size:0.8rem; margin:5px 0;">${p.name}</div>
+                <div style="color:var(--primary); font-size:0.9rem;">Rp ${p.price.toLocaleString()}</div>
+                ${p.stock <= 0 ? '<div style="color:red; font-size:0.6rem; font-weight:bold;">HABIS</div>' : ''}
             </div>
         `).join('');
     }
 
-    function toggleCashInput() {
-        const method = document.getElementById('payMethod').value;
-        const group = document.getElementById('cash-input-group');
-        group.style.display = (method === 'Tunai') ? 'block' : 'none';
-    }
-
-    function filterCategory(category, element) {
-        currentCategory = category;
-        document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
-        element.classList.add('active');
-        const filtered = category === 'ALL' ? menuData : menuData.filter(m => m.cat === category);
-        renderMenu(filtered);
-    }
-
-    function handleSearch(query) {
-        const filtered = menuData.filter(m => 
-            m.name.toLowerCase().includes(query.toLowerCase()) && 
-            (currentCategory === 'ALL' || m.cat === currentCategory)
-        );
-        renderMenu(filtered);
-    }
-
     function addToCart(id) {
-        const product = menuData.find(m => m.id === id);
+        const p = products.find(x => x.id === id);
+        if(p.stock <= 0) return alert("Stok Habis!");
         const inCart = cart.find(c => c.id === id);
-        if (inCart) inCart.qty++; else cart.push({ ...product, qty: 1 });
-        updateUI();
-    }
-
-    function changeQty(id, delta) {
-        const item = cart.find(c => c.id === id);
-        if (item) {
-            item.qty += delta;
-            if (item.qty <= 0) cart = cart.filter(c => c.id !== id);
-        }
+        if(inCart) inCart.qty++; else cart.push({...p, qty:1});
         updateUI();
     }
 
     function updateUI() {
-        const cartList = document.getElementById('cartList');
-        currentTotal = 0;
-        cartList.innerHTML = cart.map(item => {
-            currentTotal += item.price * item.qty;
-            return `
-                <div class="cart-item">
-                    <div>
-                        <div style="font-size: 0.9rem; font-weight: 600;">${item.name}</div>
-                        <div style="font-size: 0.8rem; color: #777;">Rp ${item.price.toLocaleString('id-ID')}</div>
-                    </div>
-                    <div class="qty-control">
-                        <button class="btn-qty" onclick="changeQty(${item.id}, -1)">-</button>
-                        <span>${item.qty}</span>
-                        <button class="btn-qty" onclick="changeQty(${item.id}, 1)">+</button>
-                    </div>
-                </div>`;
+        const list = document.getElementById('cartList');
+        let sub = 0;
+        list.innerHTML = cart.map(c => {
+            sub += c.price * c.qty;
+            return `<div class="cart-item"><span>${c.name} x${c.qty}</span><span>Rp ${(c.price*c.qty).toLocaleString()}</span></div>`;
         }).join('');
-        document.getElementById('totalPrice').innerText = `Rp ${currentTotal.toLocaleString('id-ID')}`;
-    }
-
-    function handleCheckout() {
-        if (cart.length === 0) return alert("Keranjang masih kosong!");
         
-        const method = document.getElementById('payMethod').value;
-        const modal = document.getElementById('paymentModal');
-        const content = document.getElementById('modalContent');
+        const discValue = sub * discount;
+        const tax = (sub - discValue) * 0.1;
         
-        let innerHTML = '';
-
-        if (method === 'Tunai') {
-            const cash = parseInt(document.getElementById('cashReceived').value) || 0;
-            if (cash < currentTotal) return alert("Uang tunai kurang!");
-            const change = cash - currentTotal;
-            
-            innerHTML = `
-                <div class="success-icon">✅</div>
-                <h3>Pembayaran NxzKOPI Berhasil</h3>
-                <div style="background: #f9f9f9; padding: 15px; border-radius: 10px; margin: 15px 0;">
-                    <div class="receipt-item"><span>Total Tagihan:</span> <b>Rp ${currentTotal.toLocaleString()}</b></div>
-                    <div class="receipt-item"><span>Uang Diterima:</span> <b>Rp ${cash.toLocaleString()}</b></div>
-                    <div class="receipt-item" style="color: var(--kenangan-red); font-size: 1.1rem; border-top: 1px solid #ddd; margin-top: 5px; padding-top: 5px;">
-                        <span>Kembalian:</span> <b>Rp ${change.toLocaleString()}</b>
-                    </div>
-                </div>
-            `;
-        } else if (method === 'QRIS') {
-            innerHTML = `
-                <h3>Scan QRIS NxzKOPI</h3>
-                <div class="qr-placeholder">
-                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=NxzKOPI-${currentTotal}" alt="QR Code">
-                </div>
-                <p style="font-weight: bold; font-size: 1.2rem; color: var(--kenangan-red);">Rp ${currentTotal.toLocaleString()}</p>
-                <p style="font-size: 0.8rem; color: #777;">Silahkan scan untuk konfirmasi pesanan</p>
-            `;
+        if(discValue > 0) {
+            document.getElementById('diskonRow').style.display = 'flex';
+            document.getElementById('diskonAmount').innerText = `-Rp ${discValue.toLocaleString()}`;
         } else {
-            innerHTML = `
-                <div class="success-icon">💳</div>
-                <h3>Transaksi ${method}</h3>
-                <p>Silahkan selesaikan di terminal EDC.</p>
-                <h2 style="color: var(--kenangan-red);">Rp ${currentTotal.toLocaleString()}</h2>
-                <div style="color: var(--success-green); font-weight: bold;">Status: BERHASIL</div>
-            `;
+            document.getElementById('diskonRow').style.display = 'none';
         }
 
-        content.innerHTML = innerHTML;
-        modal.style.display = 'flex';
+        document.getElementById('subTotal').innerText = `Rp ${sub.toLocaleString()}`;
+        document.getElementById('tax').innerText = `Rp ${tax.toLocaleString()}`;
+        document.getElementById('grandTotal').innerText = `Rp ${(sub - discValue + tax).toLocaleString()}`;
     }
 
-    function closeModal() {
-        document.getElementById('paymentModal').style.display = 'none';
-        cart = [];
-        document.getElementById('cashReceived').value = "";
+    // --- FITUR BARU: PROMO & HOLD ---
+    function applyPromo() {
+        const code = document.getElementById('promoCode').value.toUpperCase();
+        if(code === "KOPIASIK") {
+            discount = 0.2; // 20%
+            alert("Promo Berhasil! Diskon 20% diterapkan.");
+        } else {
+            discount = 0;
+            alert("Kode tidak valid.");
+        }
         updateUI();
     }
 
-    renderMenu();
+    function holdOrder() {
+        if(cart.length === 0) return alert("Keranjang kosong!");
+        pendingOrders.push([...cart]);
+        cart = [];
+        updateUI();
+        document.getElementById('pendingCount').innerText = `${pendingOrders.length} Pesanan dalam antrean`;
+        alert("Pesanan disimpan! Anda bisa melayani pelanggan berikutnya.");
+    }
+
+    function processPayment() {
+        if(cart.length === 0) return alert("Keranjang kosong!");
+        const total = parseInt(document.getElementById('grandTotal').innerText.replace(/\D/g,''));
+        const cash = parseInt(document.getElementById('cashInput').value) || 0;
+        const method = document.getElementById('method').value;
+
+        if(method === 'Tunai' && cash < total) return alert("Uang kurang!");
+
+        history.income += total;
+        history.orders++;
+        cart.forEach(c => products.find(p => p.id === c.id).stock -= c.qty);
+
+        const change = cash - total;
+        document.getElementById('receiptArea').innerHTML = `
+            <h3 style="text-align:center; margin:0;">NxzKOPI</h3>
+            <p style="text-align:center; font-size:0.6rem; margin-bottom:10px;">Jl. Kode Premium No. 123</p>
+            <hr>
+            ${cart.map(c => `<div>${c.name} x${c.qty} <span style="float:right">Rp ${(c.price*c.qty).toLocaleString()}</span></div>`).join('')}
+            <hr>
+            <div>TOTAL: <span style="float:right">Rp ${total.toLocaleString()}</span></div>
+            <div>BAYAR (${method}): <span style="float:right">Rp ${cash.toLocaleString()}</span></div>
+            <div style="font-weight:bold">KEMBALI: <span style="float:right">Rp ${change.toLocaleString()}</span></div>
+            <hr>
+            <p style="text-align:center">Terima Kasih!</p>
+            <button class="btn btn-primary no-print" onclick="window.print()">CETAK</button>
+            <button class="btn btn-success no-print" style="margin-top:5px" onclick="resetAll()">PESANAN BARU</button>
+        `;
+        document.getElementById('modal').style.display = 'flex';
+        updateStats();
+    }
+
+    function addNewProduct() {
+        const name = document.getElementById('newName').value;
+        const price = parseInt(document.getElementById('newPrice').value);
+        const stock = parseInt(document.getElementById('newStock').value);
+        if(!name || !price) return alert("Isi data menu!");
+        
+        products.push({ id: Date.now(), name, price, stock, icon: "🏷️" });
+        alert("Menu Berhasil Ditambah!");
+        renderProducts();
+    }
+
+    function updateStats() {
+        document.getElementById('statIncome').innerText = `Rp ${history.income.toLocaleString()}`;
+        document.getElementById('statOrders').innerText = history.orders;
+    }
+
+    function resetAll() {
+        cart = [];
+        discount = 0;
+        document.getElementById('promoCode').value = '';
+        document.getElementById('modal').style.display = 'none';
+        document.getElementById('cashInput').value = '';
+        renderProducts();
+        updateUI();
+    }
+
+    renderProducts();
 </script>
 
 </body>
